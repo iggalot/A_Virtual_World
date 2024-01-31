@@ -15,20 +15,39 @@ class World {
        this.buildingMinLength = buildingMinLength;
        this.spacing = spacing;
        this.treeSize = treeSize;
- 
+
        this.envelopes = [];
        this.roadBorders = [];
        this.buildings = [];
        this.trees = [];
        this.laneGuides = [];
- 
+
        this.markings = [];
- 
+
        this.frameCount = 0;
- 
+
        this.generate();
     }
- 
+
+//     static load(info){
+//       return new World(Graph.load(info.graph));
+// //      world.graph = Graph.load(info.graph);
+//       // world.roadWidth = info.roadWidth;
+//       // world.roadRoundness = info.roadRoundness;
+//       // world.buildingWidth = info.buildingWidth;
+//       // world.buildingMinLength = info.buildingMinLength;
+//       // world.spacing = info.spacing;
+//       // world.treeSize = info.treeSize;
+//       // world.envelopes = info.envelopes.map((e)=> Envelope.load(e));
+//       // world.roadBorders = info.roadBorders.map((b)=> new Segment(b.p1, b.p2));
+//       // world.buildings = info.buildings.map((e) => Building.load(e));
+//       // world.trees = info.trees.map((t) => new Tree(t.center, info.treeSize));
+//       // world.laneGuides = info.laneGuides.map((g) => new Segment(g.p1, g.p2));
+//       // world.markings = info.markings.map((m) => Marking.load(m));
+
+//       return world;
+//     }
+
     generate() {
        this.envelopes.length = 0;
        for (const seg of this.graph.segments) {
@@ -36,15 +55,15 @@ class World {
              new Envelope(seg, this.roadWidth, this.roadRoundness)
           );
        }
- 
+
        this.roadBorders = Polygon.union(this.envelopes.map((e) => e.poly));
        this.buildings = this.#generateBuildings();
        this.trees = this.#generateTrees();
- 
+
        this.laneGuides.length = 0;
        this.laneGuides.push(...this.#generateLaneGuides());
     }
- 
+
     #generateLaneGuides() {
        const tmpEnvelopes = [];
        for (const seg of this.graph.segments) {
@@ -55,7 +74,7 @@ class World {
        const segments = Polygon.union(tmpEnvelopes.map((e) => e.poly));
        return segments;
     }
- 
+
     #generateTrees() {
        const points = [
           ...this.roadBorders.map((s) => [s.p1, s.p2]).flat(),
@@ -65,12 +84,12 @@ class World {
        const right = Math.max(...points.map((p) => p.x));
        const top = Math.min(...points.map((p) => p.y));
        const bottom = Math.max(...points.map((p) => p.y));
- 
+
        const illegalPolys = [
           ...this.buildings.map((b) => b.base),
           ...this.envelopes.map((e) => e.poly),
        ];
- 
+
        const trees = [];
        let tryCount = 0;
        while (tryCount < 100) {
@@ -78,7 +97,7 @@ class World {
              lerp(left, right, Math.random()),
              lerp(bottom, top, Math.random())
           );
- 
+
           // check if tree inside or nearby building / road
           let keep = true;
           for (const poly of illegalPolys) {
@@ -90,7 +109,7 @@ class World {
                 break;
              }
           }
- 
+
           // check if tree too close to other trees
           if (keep) {
              for (const tree of trees) {
@@ -100,7 +119,7 @@ class World {
                 }
              }
           }
- 
+
           // avoiding trees in the middle of nowhere
           if (keep) {
              let closeToSomething = false;
@@ -112,7 +131,7 @@ class World {
              }
              keep = closeToSomething;
           }
- 
+
           if (keep) {
              trees.push(new Tree(p, this.treeSize));
              tryCount = 0;
@@ -121,7 +140,7 @@ class World {
        }
        return trees;
     }
- 
+
     #generateBuildings() {
        const tmpEnvelopes = [];
        for (const seg of this.graph.segments) {
@@ -133,9 +152,9 @@ class World {
              )
           );
        }
- 
+
        const guides = Polygon.union(tmpEnvelopes.map((e) => e.poly));
- 
+
        for (let i = 0; i < guides.length; i++) {
           const seg = guides[i];
           if (seg.length() < this.buildingMinLength) {
@@ -143,7 +162,7 @@ class World {
              i--;
           }
        }
- 
+
        const supports = [];
        for (let seg of guides) {
           const len = seg.length() + this.spacing;
@@ -151,25 +170,25 @@ class World {
              len / (this.buildingMinLength + this.spacing)
           );
           const buildingLength = len / buildingCount - this.spacing;
- 
+
           const dir = seg.directionVector();
- 
+
           let q1 = seg.p1;
           let q2 = add(q1, scale(dir, buildingLength));
           supports.push(new Segment(q1, q2));
- 
+
           for (let i = 2; i <= buildingCount; i++) {
              q1 = add(q2, scale(dir, this.spacing));
              q2 = add(q1, scale(dir, buildingLength));
              supports.push(new Segment(q1, q2));
           }
        }
- 
+
        const bases = [];
        for (const seg of supports) {
           bases.push(new Envelope(seg, this.buildingWidth).poly);
        }
- 
+
        const eps = 0.001;
        for (let i = 0; i < bases.length - 1; i++) {
           for (let j = i + 1; j < bases.length; j++) {
@@ -182,10 +201,10 @@ class World {
              }
           }
        }
- 
+
        return bases.map((b) => new Building(b));
     }
- 
+
     #getIntersections() {
        const subset = [];
        for (const point of this.graph.points) {
@@ -195,14 +214,14 @@ class World {
                 degree++;
              }
           }
- 
+
           if (degree > 2) {
              subset.push(point);
           }
        }
        return subset;
     }
- 
+
     #updateLights() {
        const lights = this.markings.filter((m) => m instanceof Light);
        const controlCenters = [];
@@ -242,10 +261,10 @@ class World {
        }
        this.frameCount++;
     }
- 
+
     draw(ctx, viewPoint) {
        this.#updateLights();
- 
+
        for (const env of this.envelopes) {
           env.draw(ctx, { fill: "#BBB", stroke: "#BBB", lineWidth: 15 });
        }
@@ -258,7 +277,7 @@ class World {
        for (const seg of this.roadBorders) {
           seg.draw(ctx, { color: "white", width: 4 });
        }
- 
+
        const items = [...this.buildings, ...this.trees];
        items.sort(
           (a, b) =>
