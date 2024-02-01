@@ -266,7 +266,7 @@ class World {
       this.frameCount++;
    }
 
-   draw(ctx, viewPoint, showStartMarkings = true, renderRadius = 4000) {
+   draw(ctx, viewPoint, showStartMarkings = true, renderRadius = 2000) {
       this.#updateLights();
 
       for (const env of this.envelopes) {

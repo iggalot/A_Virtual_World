@@ -23,9 +23,14 @@ button:hover{
     background:blue;
 }
 
+#miniMapCanvas{
+    background:black;
+}
+
 #networkCanvas{
     background:black;
 }
+
 #carCanvas{
     background:#2a5;
 }
