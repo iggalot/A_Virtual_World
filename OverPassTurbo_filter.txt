@@ -1,0 +1,37 @@
+Instructions:
+1.  Log into overpass=turbo.eu
+2.  Paste the following lines into the filter window.
+3.  Click run.  Be careful on the size of the map.
+4.  Click DATA in upper left.
+5.  Select all and copy to clipboard.  Paste into the OSM code in the application
+
+BEGIN FILTER
+=========================
+
+[out:json];
+(
+  way['highway']
+  ['highway' !~'pedestrian']
+  ['highway' !~'footway']
+  ['highway' !~'cycleway']
+  ['highway' !~'path']
+  ['highway' !~'service']
+  ['highway' !~'corridor']
+  ['highway' !~'track']
+  ['highway' !~'steps']
+  ['highway' !~'raceway']
+  ['highway' !~'bridleway']
+  ['highway' !~'proposed']
+  ['highway' !~'construction']
+  ['highway' !~'elevator']
+  ['highway' !~'bus_guideway']
+  ['access' !~'private']
+  ['access' !~'no']
+  ({{bbox}});
+);
+out body;
+>;
+out skel;
+
+==============================
+END FILTER

@@ -74,8 +74,8 @@ class Viewport {
  
     #handleMouseWheel(evt) {
        const dir = Math.sign(evt.deltaY);
-       const step = 0.1;
+       const step = 0.5;
        this.zoom += dir * step;
-       this.zoom = Math.max(1, Math.min(5, this.zoom));
+       this.zoom = Math.max(1, Math.min(20, this.zoom));
     }
  }

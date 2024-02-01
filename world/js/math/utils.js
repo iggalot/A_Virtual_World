@@ -99,6 +99,14 @@ function getNearestPoint(loc, points, threshold = Number.MAX_SAFE_INTEGER) {
  function lerp2D(A, B, t) {
     return new Point(lerp(A.x, B.x, t), lerp(A.y, B.y, t));
  }
+
+ function invLerp(a, b, v){
+   return (v - a) / (b - a);
+ }
+
+ function degreesToRad(degree) {
+   return degree * Math.PI / 180;
+ }
  
  function getRandomColor() {
     const hue = 290 + Math.random() * 260;
